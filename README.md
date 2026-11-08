@@ -143,3 +143,40 @@ SELECT COUNT(*)                         AS high_volume_producers,
 FROM producer_summary
 WHERE total_ratings >= 10;
 ```
+
+## Unit 5 – Joins
+
+All Unit 5 SQL is in `queries/unit5/`. Write-ups are in `analysis/unit5.md` and the leadership memo is in `analysis/unit5-finding.md`.
+
+### Task 5.1 – Combining tables (`q5_1.sql`)
+| Query | Join used | Business question |
+|---|---|---|
+| Requirement 1 | INNER JOIN (3 tables) | Who gave each rating, for which movie, and when? |
+| Requirement 2 | INNER JOIN through `movie_genres` | Do the flagged movies (2, 9, 11) share any genres? |
+| Requirement 3 | Self join on `movies` | How do the flagged movies compare with other movies from the same country? |
+
+### Task 5.2 – Records that joins may exclude (`q5_2.sql`)
+| Query | Join used | Business question |
+|---|---|---|
+| A.1 | LEFT JOIN | How many ratings does every movie have, including movies with none? |
+| A.2 | INNER JOIN | How many ratings does each rated movie have? |
+| A.3 | LEFT vs INNER count | How many movies does the inner join leave out? |
+| A.4 | LEFT JOIN + IS NULL | Which movies have never been rated? |
+| B.1 | RIGHT JOIN | Same as A.1, with the tables swapped |
+| B.2 | EXCEPT check | Do the LEFT and RIGHT JOIN results match exactly? |
+| B.3 | FULL OUTER JOIN | Are there movies with no ratings, or ratings with no movie? |
+| C.1 | NOT EXISTS | Which movies have never been rated? |
+| C.2 | EXCEPT | Which movies have never been rated? |
+
+### Task 5.3 – Join performance (`q5_3.sql`)
+| Query | Technique | Business question |
+|---|---|---|
+| A.1 | COUNT | How many rows are in `movies` and `genres`? |
+| A.2 | CROSS JOIN | What does every possible movie and genre pair look like? |
+| A.3 | COUNT check | Does the cross join return movies × genres rows (15 × 5 = 75)? |
+| B | EXPLAIN ANALYZE | How does PostgreSQL run the three-table join, and how fast is it? |
+
+### Key results
+- **Producers with no events:** movies 14 and 15. The inner join hides them (15 movies vs 13).
+- **Flagged producers (11, 9, 2):** they share no single genre, and each fails more than its same-country peers.
+- **Execution plan:** Hash Join (ratings → users) and Nested Loop with Memoize (→ movies), with 13 cache misses and 187 hits. Execution took 0.213 ms.
